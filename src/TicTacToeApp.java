@@ -5,7 +5,6 @@ import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -166,6 +165,31 @@ public class TicTacToeApp extends Application {
             text.setText("O");
         }
     }
+
+//    public int minmax(String gracz)
+//    {
+//        int m, mmx;
+//
+//        if(wygrana(t,gracz)) return (gracz == 'X') ? 1 : -1;
+//
+//        if(remis(t,true)) return 0;
+//
+//        gracz = (gracz == 'X') ? 'O' : 'X';
+//
+//        mmx = (gracz == 'O') ? 10 : -10;
+//
+//        for(int i = 1; i <= 9; i++)
+//            if(t[i] == ' ')
+//            {
+//                t[i] = gracz;
+//                m = minimax(t,gracz);
+//                t[i] = ' ';
+//                if(((gracz == 'O') && (m < mmx)) || ((gracz == 'X') && (m > mmx))) mmx = m;
+//            }
+//        return mmx;
+//
+//        return 0;
+//    }
 
     public static void main(String[] args) {
         //TicTacToeApp ticTacToeApp = new TicTacToeApp();
