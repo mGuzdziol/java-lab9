@@ -1,9 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -17,7 +14,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 import static javafx.scene.shape.StrokeType.INSIDE;
 
@@ -90,16 +86,12 @@ public class TicTacToeApp extends Application {
         Line line = new Line();
         line.setStartX(combo.tiles[0].getCenterX());
         line.setStartY(combo.tiles[0].getCenterY());
-        line.setEndX(combo.tiles[0].getCenterX());
-        line.setEndY(combo.tiles[0].getCenterY());
+        line.setEndX(combo.tiles[2].getCenterX());
+        line.setEndY(combo.tiles[2].getCenterY());
+        line.setStrokeWidth(7);
+        line.setStroke(Color.GREY);
 
         root.getChildren().add(line);
-
-        Timeline timeline = new Timeline();
-        timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(1),
-                new KeyValue(line.endXProperty(), combo.tiles[2].getCenterX()),
-                new KeyValue(line.endYProperty(), combo.tiles[2].getCenterY())));
-        timeline.play();
     }
 
     private class Combo {
@@ -135,31 +127,31 @@ public class TicTacToeApp extends Application {
                 if (!playable)
                     return;
 
-                if (event.getButton() == MouseButton.PRIMARY) {
-                    if (!turnX)
-                        return;
+                    if (turnX){
+                        if(!text.getText().isEmpty())
+                            return;
 
-                    drawX();
-                    turnX = false;
-                    checkState();
-                }
-                else if (event.getButton() == MouseButton.SECONDARY) {
-                    if (turnX)
-                        return;
+                        drawX();
+                        turnX = false;
+                    }
+                    else
+                    {
+                        if(!text.getText().isEmpty())
+                            return;
 
-                    drawO();
-                    turnX = true;
-                    checkState();
-                }
+                        drawO();
+                        turnX = true;
+                    }
+                checkState();
             });
         }
 
         public double getCenterX() {
-            return getTranslateX() + 100;
+            return getTranslateX() + 50;
         }
 
         public double getCenterY() {
-            return getTranslateY() + 100;
+            return getTranslateY() + 50;
         }
 
         public String getValue() {
