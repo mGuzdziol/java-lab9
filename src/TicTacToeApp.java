@@ -1,10 +1,18 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -14,19 +22,75 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 import static javafx.scene.shape.StrokeType.INSIDE;
 
 public class TicTacToeApp extends Application {
 
+    private static boolean ifFirst = true;
     private boolean playable = true;
     private boolean turnX = true;
     private Tile[][] board = new Tile[4][4];
     private List<Combo> combos = new ArrayList<>();
+    ChoiceBox choiceBox = new ChoiceBox();
+    HBox hbox = new HBox(choiceBox);
+    ChoiceBox choiceBox2 = new ChoiceBox();
+    HBox hbox2 = new HBox(choiceBox);
+    ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 
     private Pane root = new Pane();
 
     private Parent createContent() {
-        root.setPrefSize(400, 400);
+        root.setPrefSize(400, 500);
+
+        choiceBox.setTranslateX(200);
+        choiceBox.setTranslateY(450);
+        choiceBox2.setTranslateX(50);
+        choiceBox2.setTranslateY(450);
+        root.getChildren().addAll(choiceBox,choiceBox2);
+
+        choiceBox2.getItems().add("JavaScript");
+        choiceBox2.getItems().add("C++");
+
+        choiceBox2.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
+                System.out.println(choiceBox2.getItems().get((Integer) number2));
+
+                String path;
+                if(choiceBox2.getItems().get((Integer) number2)=="JavaScript")
+                    path="D:\\Studia\\Sem6\\java\\cw9\\java-lab9\\js\\";
+                else
+                    path="D:\\Studia\\Sem6\\java\\cw9\\java-lab9\\js\\";
+
+                File directory = new File(path);
+                File[] children = directory.listFiles();
+                for (File child : children) {
+                    if (child.isFile() && child.getName().contains(".js")) {
+                        choiceBox.getItems().add(child.getName());
+                    }
+                }
+            }
+        });
+//        try {
+//            engine.eval(new FileReader("D:\\Studia\\Sem6\\java\\cw9\\java-lab9\\js\\advancedAlg.js"));
+//            Invocable invocable = (Invocable) engine;
+//            Object result;
+//            result = invocable.invokeFunction("display", "helloWorld");
+//            System.out.println(result);
+//        } catch (FileNotFoundException | NoSuchMethodException | ScriptException e) {
+//            e.printStackTrace();
+//        }
+
+//        choiceBox.getItems().add("Choice 1");
+//        choiceBox.getItems().add("Choice 2");
+
+       // root.getChildren()
+
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -71,14 +135,15 @@ public class TicTacToeApp extends Application {
         primaryStage.show();
     }
 
-    private void checkState() {
+    private boolean checkState() {
         for (Combo combo : combos) {
             if (combo.isComplete()) {
                 playable = false;
                 playWinAnimation(combo);
-                break;
+                return true;
             }
         }
+        return false;
     }
 
     private void playWinAnimation(Combo combo) {
@@ -108,8 +173,15 @@ public class TicTacToeApp extends Application {
         }
     }
 
+    static {
+        System.loadLibrary("native");
+    }
+
+    private native void sayHello();
+
     private class Tile extends StackPane {
         private Text text = new Text();
+        long cnt=0;
 
         public Tile() {
             Rectangle border = new Rectangle(100, 100);
@@ -126,22 +198,22 @@ public class TicTacToeApp extends Application {
                 if (!playable)
                     return;
 
-                    if (turnX){
-                        if(!text.getText().isEmpty())
-                            return;
+                // if(ifFirst==false){
+                //if (turnX){
+                if(!text.getText().isEmpty())
+                    return;
+                cnt=0;
+                drawX();
+                turnX = false;
+                //checkState();
 
-                        drawX();
-                        turnX = false;
-                    }
-                    else
-                    {
-                        if(!text.getText().isEmpty())
-                            return;
+                if(!checkState()){
+                int[] tab =enemyTurn();
 
-                        drawO();
-                        turnX = true;
-                    }
-                checkState();
+                board[tab[0]][tab[1]].text.setText("O");
+                turnX = true;
+                checkState();}
+
             });
         }
 
@@ -164,32 +236,117 @@ public class TicTacToeApp extends Application {
         private void drawO() {
             text.setText("O");
         }
+
+
+        public int[] enemyTurn()
+        {
+//            String[][] miniMaxBoard = new String[4][4];
+//            for (int i = 0; i < 4; i++) {
+//                for (int j = 0; j < 4; j++) {
+//                    miniMaxBoard[j][i]= board[j][i].text.getText();
+//                }
+//            }
+
+            String miniMaxBoard = new String();
+
+            int z=0;
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    miniMaxBoard += board[j][i].text.getText()+" ";
+                    z++;
+                }
+            }
+
+            Object result=null;
+
+            int[] intArray=null;
+            if(choiceBox2.getSelectionModel().getSelectedItem().toString()=="JavaScript") {
+                try {
+                    engine.eval(new FileReader("D:\\Studia\\Sem6\\java\\cw9\\java-lab9\\js\\"+choiceBox.getSelectionModel().getSelectedItem().toString()));
+                    Invocable invocable = (Invocable) engine;
+                    result = invocable.invokeFunction("algorithm", miniMaxBoard);
+                } catch (FileNotFoundException | NoSuchMethodException | ScriptException e) {
+                    e.printStackTrace();
+                }
+
+                String str = (String) result;
+                String strArray[] = str.split(" ");
+
+                intArray = new int[strArray.length];
+                for (int i = 0; i < strArray.length; i++) {
+                    intArray[i] = Integer.parseInt(strArray[i]);
+                }
+            }
+
+//            for (int i = 0; i < 4; i++) {
+//                for (int j = 0; j < 4; j++) {
+//                    if(miniMaxBoard[j][i].equals("")) {
+//                        miniMaxBoard[j][i] ="O";
+//                        if (wygrana(miniMaxBoard, "O"))
+//                            return new int[]{j, i};
+//                        miniMaxBoard[j][i] = "";
+//                    }
+//                }
+//            }
+//
+//            for (int i = 0; i < 4; i++) {
+//                for (int j = 0; j < 4; j++) {
+//                    if(miniMaxBoard[j][i].equals(""))
+//                    {
+//                        miniMaxBoard[j][i] ="X";
+//                        if(wygrana(miniMaxBoard,"X"))
+//                            return new int[]{j,i};
+//                        miniMaxBoard[j][i]="";
+//                    }
+//                }
+//            }
+//
+//            Random r = new Random();
+//            int x = r.nextInt((3 - 0) + 1) + 0;
+//            int y = r.nextInt((3 - 0) + 1) + 0;
+//
+//            while(miniMaxBoard[x][y]=="X" || miniMaxBoard[x][y]=="O"){
+//                x = r.nextInt((3 - 0) + 1) + 0;
+//                y = r.nextInt((3 - 0) + 1) + 0;
+//            }
+//
+            return intArray;
+        }
+
+        public boolean wygrana(String t[][], String g)
+        {
+            boolean test;
+
+            test = false;
+
+            for (int y = 0; y < 4; y++) {
+                test |= ((t[0][y] == g) && (t[1][y] == g) && (t[2][y] == g));
+                test |= ((t[1][y] == g) && (t[2][y] == g) && (t[3][y] == g));
+            }
+
+            for (int x = 0; x < 4; x++) {
+                test |= ((t[x][0] == g) && (t[x][1] == g) && (t[x][2] == g));
+                test |= ((t[x][1] == g) && (t[x][2] == g) && (t[x][3] == g));
+            }
+
+            test |= ((t[0][0] == g) && (t[1][1] == g) && (t[2][2] == g));
+            test |= ((t[2][0] == g) && (t[1][1] == g) && (t[0][2] == g));
+            test |= ((t[1][0] == g) && (t[2][1] == g) && (t[3][2] == g));
+            test |= ((t[3][0] == g) && (t[2][1] == g) && (t[1][2] == g));
+            test |= ((t[0][1] == g) && (t[1][2] == g) && (t[2][3] == g));
+            test |= ((t[2][1] == g) && (t[1][2] == g) && (t[0][3] == g));
+            test |= ((t[1][1] == g) && (t[2][2] == g) && (t[3][3] == g));
+            test |= ((t[3][1] == g) && (t[2][2] == g) && (t[1][3] == g));
+
+            if(test)
+            {
+                return true;
+            }
+            return false;
+        }
+
     }
 
-//    public int minmax(String gracz)
-//    {
-//        int m, mmx;
-//
-//        if(wygrana(t,gracz)) return (gracz == 'X') ? 1 : -1;
-//
-//        if(remis(t,true)) return 0;
-//
-//        gracz = (gracz == 'X') ? 'O' : 'X';
-//
-//        mmx = (gracz == 'O') ? 10 : -10;
-//
-//        for(int i = 1; i <= 9; i++)
-//            if(t[i] == ' ')
-//            {
-//                t[i] = gracz;
-//                m = minimax(t,gracz);
-//                t[i] = ' ';
-//                if(((gracz == 'O') && (m < mmx)) || ((gracz == 'X') && (m > mmx))) mmx = m;
-//            }
-//        return mmx;
-//
-//        return 0;
-//    }
 
     public static void main(String[] args) {
         //TicTacToeApp ticTacToeApp = new TicTacToeApp();
