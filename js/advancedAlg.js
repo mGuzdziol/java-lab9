@@ -38,12 +38,26 @@ var algorithm = function(oneTab) {
        }
    }
 
-   var x = Math.floor(Math.random() * 4);
-   var y = Math.floor(Math.random() * 4);
+    for (var i = 0; i < 4; i++) {
+        for (var j = 0; j < 4; j++) {
+            if (miniMaxBoard[j][i] === "O")
+            {
+                for (var x = -1; x < 2; x++)
+                    for (var y = -1;y < 2; y++)
+                        if (j + x < 4 && i+y<4 && i + y >=0 && j + x >= 0 && miniMaxBoard[j + x][i+y] != "X" && miniMaxBoard[j + x][i+y] != "O")
+                        {
+                            return (j+x) +" "+ (i+y);
+                        }
+            }
+        }
+    }
+
+   var x = Math.floor(Math.random() * 2) + 1;
+   var y = Math.floor(Math.random() * 2) + 1;
 
    while(miniMaxBoard[x][y]==="X" || miniMaxBoard[x][y]==="O"){
-       x = Math.floor(Math.random() * 4);
-       y = Math.floor(Math.random() * 4);
+       x = Math.floor(Math.random() * 2) + 1;
+       y = Math.floor(Math.random() * 2) + 1;
    }
 
     return x +" "+ y;
